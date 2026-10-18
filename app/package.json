@@ -1,0 +1,7 @@
+{
+  "name": "ai-limit-monitor",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "tauri": "tauri", "test:ui": "node test_render.js" },
+  "devDependencies": { "@tauri-apps/cli": "^2" }
+}

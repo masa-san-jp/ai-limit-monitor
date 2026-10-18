@@ -1,0 +1,7 @@
+{
+  "identifier": "grok-remote",
+  "description": "grok.com 上の注入スクリプトに許可する唯一の操作(使用量の報告)",
+  "windows": ["grok"],
+  "remote": { "urls": ["https://grok.com/*", "https://*.grok.com/*"] },
+  "permissions": ["allow-grok-report"]
+}

@@ -1,0 +1,14 @@
+[package]
+name = "limit-core"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+reqwest-http = ["dep:reqwest"]
+
+[dependencies]
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"], optional = true }

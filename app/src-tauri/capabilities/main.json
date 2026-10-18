@@ -1,0 +1,12 @@
+{
+  "identifier": "main-window",
+  "description": "ポップオーバー(ローカルUI)に許可する操作",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "allow-get-snapshot",
+    "allow-refresh-now",
+    "allow-open-grok-login",
+    "allow-quit-app"
+  ]
+}

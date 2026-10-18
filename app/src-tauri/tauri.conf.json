@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AI Limit Monitor",
+  "version": "0.1.0",
+  "identifier": "dev.example.ai-limit-monitor",
+  "build": { "frontendDist": "../ui" },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": false,
+    "windows": [
+      {
+        "label": "main",
+        "url": "index.html",
+        "title": "AI Limit Monitor",
+        "width": 340,
+        "height": 430,
+        "decorations": false,
+        "resizable": false,
+        "visible": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self'; script-src 'self'; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "icon": ["icons/icon.png"],
+    "category": "Utility"
+  }
+}
