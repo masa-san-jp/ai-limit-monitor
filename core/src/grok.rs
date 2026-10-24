@@ -1,5 +1,5 @@
 //! Grok (SuperGrok) の使用量。消費者向けの公開APIは確認できていないため、
-//! アプリ専用プロファイルの WebView で Settings > Usage を開き、注入スクリプトが
+//! アプリ専用プロファイルの WebView で 統合プランの grok.com/dashboard の Usage を開き、注入スクリプトが
 //! 画面から抽出した JSON をここで解釈する。
 //!
 //! 注入スクリプトが返す想定ペイロード(DOM のセレクタは実アカウントで要較正):
@@ -13,7 +13,7 @@ use serde::Deserialize;
 use crate::error::FetchError;
 use crate::model::{clamp_percent, Window, WindowKind};
 
-pub const USAGE_PAGE: &str = "https://grok.com/";
+pub const USAGE_PAGE: &str = "https://grok.com/dashboard";
 
 #[derive(Deserialize)]
 struct Raw {
@@ -86,12 +86,15 @@ pub fn parse(body: &str, now: DateTime<Utc>) -> Result<Vec<Window>, FetchError> 
     let used = raw
         .used_percent
         .ok_or_else(|| FetchError::Parse("used_percent がありません".into()))?;
+    if !used.is_finite() || !(0.0..=100.0).contains(&used) {
+        return Err(FetchError::Parse("使用率が範囲外です".into()));
+    }
     let resets_at = raw
         .resets_at
         .and_then(|s| DateTime::parse_from_rfc3339(&s).ok())
         .map(|d| d.with_timezone(&Utc))
         .or_else(|| raw.reset_text.as_deref().and_then(parse_relative).map(|d| now + d));
-    // SuperGrok は週次プール(全プロダクト共有)
+    // The X Subscription の共有週間枠。旧 Cursor の月間枠は対象外。
     Ok(vec![Window { kind: WindowKind::Weekly, used_percent: clamp_percent(used), resets_at }])
 }
 
@@ -120,6 +123,13 @@ mod tests {
         assert_eq!(parse_relative("soon"), None);
         let w = parse(r#"{"used_percent":5,"reset_text":"5 hours"}"#, now()).unwrap();
         assert_eq!(w[0].resets_at, Some(now() + Duration::hours(5)));
+    }
+
+    #[test]
+    fn invalid_percent_is_rejected() {
+        for body in [r#"{"used_percent":-1}"#, r#"{"used_percent":101}"#] {
+            assert!(parse(body, now()).is_err());
+        }
     }
 
     #[test]

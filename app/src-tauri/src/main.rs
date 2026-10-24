@@ -4,7 +4,7 @@ use std::sync::mpsc::{channel, Sender};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use chrono::{Local, Offset, Utc};
+use chrono::{Local, Utc};
 use limit_core::error::FetchError;
 use limit_core::http::ReqwestHttp;
 use limit_core::model::{Service, ServiceUsage};
@@ -146,6 +146,9 @@ fn grok_report(app: AppHandle, state: State<App>, payload: String) {
     }
     let now = Utc::now();
     let Ok(windows) = grok::parse(&payload, now) else { return };
+    if let (Some(window), Some(usage)) = (app.get_webview_window("grok"), windows.first()) {
+        let _ = window.set_title(&format!("Grok / Cursor 共有使用量 — {:.0}% 取得済み", usage.used_percent));
+    }
     let mut s = state.store.lock().unwrap();
     let usage = fetch::resolve(Service::Grok, s.grok.as_ref(), Ok(windows), now);
     notify(&app, &usage, &mut s);
@@ -154,16 +157,18 @@ fn grok_report(app: AppHandle, state: State<App>, payload: String) {
 }
 
 fn show_grok_window(app: &AppHandle, visible: bool) -> Result<(), String> {
+    let url = grok::USAGE_PAGE.parse().map_err(|_| "invalid url".to_string())?;
     if let Some(w) = app.get_webview_window("grok") {
         if visible {
+            // ログイン後にチャットへ遷移していても、使用量画面へ戻す。
+            w.navigate(url).map_err(|e| e.to_string())?;
             let _ = w.show();
             let _ = w.set_focus();
         }
         return Ok(());
     }
-    let url = grok::USAGE_PAGE.parse().map_err(|_| "invalid url".to_string())?;
     WebviewWindowBuilder::new(app, "grok", WebviewUrl::External(url))
-        .title("Grok にログイン")
+        .title("Grok / Cursor 共有使用量")
         .inner_size(480.0, 720.0)
         .visible(visible)
         .initialization_script(GROK_SCRIPT)

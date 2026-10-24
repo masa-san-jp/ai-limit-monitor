@@ -3,3 +3,18 @@ node_modules/
 app/src-tauri/target/
 app/src-tauri/gen/
 app/src-tauri/icons/
+
+# Local credentials, environment variables, and signing material
+.env
+.env.*
+!.env.example
+.aws/
+.claude/
+.codex/
+auth.json
+.credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+.DS_Store
